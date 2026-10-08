@@ -1,0 +1,1 @@
+{"name":"kedarmart-storefront","version":"1.0.0","private":true,"scripts":{"test":"node --check dist/app.js && node scripts/verify.mjs && node scripts/interactions.mjs","build":"node scripts/verify.mjs"}}
