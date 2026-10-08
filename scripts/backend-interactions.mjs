@@ -1,0 +1,24 @@
+import {readFileSync} from 'node:fs';
+import vm from 'node:vm';
+import assert from 'node:assert/strict';
+const elements=new Map(),capture={},normal={},windowEvents={},calls=[];
+function el(id){if(!elements.has(id))elements.set(id,{innerHTML:'',textContent:'',value:'',hidden:true,disabled:false,classList:{add(){},remove(){}},addEventListener(){},setAttribute(){},focus(){},querySelector(){return {disabled:false}},reset(){}});return elements.get(id)}
+const p={id:'coffee',name:'Coffee',cat:'coffee',desc:'Coffee',variant:'Pending',price:null,stock:0,variants:[]};
+let state={csrf:'test-csrf',user:null,cart:{},wishlist:[]};
+const ctx={document:{querySelector:el,addEventListener(t,f,c){(c?capture:normal)[t]=f}},location:{hash:'',href:''},localStorage:{getItem(){return null},setItem(){}},window:{addEventListener(t,f){windowEvents[t]=f},scrollTo(){}},setTimeout:()=>1,clearTimeout(){},crypto:{randomUUID:()=> '12345678-1234-4234-8234-123456789012'},console,FormData:class{constructor(form){return Object.entries(form.fields||{})}},fetch:async(url,opts)=>{calls.push({url,opts});const body=opts.body?JSON.parse(opts.body):{};let result;if(url==='/api/products/')result={products:[p]};else if(url==='/api/session/')result=state;else if(url==='/api/cart/'){if(opts.method==='DELETE')delete state.cart[body.product];else state.cart[body.product]={quantity:body.quantity,variant:body.variant};result=state}else if(url==='/api/wishlist/'){state.wishlist=opts.method==='DELETE'?[]:[body.product];result=state}else if(url==='/api/register/'){state={...state,user:{name:'Tester',email:'test@example.com'},csrf:'rotated-csrf'};result=state}else if(url==='/api/addresses/')result={addresses:[]};else if(url==='/api/newsletter/')result={message:'Subscribed'};else throw Error('Unexpected endpoint '+url);return {ok:true,json:async()=>structuredClone(result)}}};
+vm.createContext(ctx);vm.runInContext(readFileSync('dist/app.js','utf8'),ctx);vm.runInContext(readFileSync('dist/backend.js','utf8'),ctx);
+await new Promise(r=>setTimeout(r,10));
+const click=target=>capture.click({target:{closest:()=>target},stopImmediatePropagation(){},preventDefault(){}});
+await click({dataset:{add:'coffee'}});
+assert.equal(el('#count').textContent,1);assert.equal(state.cart.coffee.quantity,1);
+await capture.change({target:{dataset:{qty:'coffee'},value:'3'},stopImmediatePropagation(){}});assert.equal(state.cart.coffee.quantity,3);
+await click({dataset:{wish:'coffee'}});assert.deepEqual(state.wishlist,['coffee']);
+ctx.location.hash='#account';
+await capture.submit({target:{id:'register',fields:{name:'Tester',email:'test@example.com',password:'strong-pass'},querySelector(){return {disabled:false}}},stopImmediatePropagation(){},preventDefault(){}});
+assert(el('#app').innerHTML.includes('Welcome, Tester.'));
+el('#news-email').value='test@example.com';
+await capture.submit({target:{id:'newsletter',fields:{},querySelector(){return {disabled:false}},reset(){}},stopImmediatePropagation(){},preventDefault(){}});
+assert(calls.some(c=>c.url==='/api/newsletter/'&&c.opts.headers['X-CSRFToken']==='rotated-csrf'));
+await click({dataset:{remove:'coffee'}});assert.equal(el('#count').textContent,0);
+assert(calls.filter(c=>c.opts.method!=='GET').every(c=>c.opts.credentials==='same-origin'));
+console.log('Django frontend bridge: database catalog, API cart/wishlist, registration, CSRF rotation and newsletter passed.');

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="35 115 1175 320" role="img" aria-labelledby="title desc">
+  <title id="title">Kedarkhand Global Ventures</title>
+  <desc id="desc">Mountain and home emblem in blue and green. Your Needs, Our Commitment.</desc>
+  <defs>
+    <linearGradient id="blue" x1="0" y1="1" x2=".7" y2="0"><stop stop-color="#062b77"/><stop offset="1" stop-color="#0076cc"/></linearGradient>
+    <linearGradient id="green" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#07572f"/><stop offset="1" stop-color="#146319"/></linearGradient>
+  </defs>
+  <path fill="#fff" d="M35 115h1175v320H35z"/>
+  <path fill="url(#blue)" d="M50 255 180 125 308 255v70l-81-93-11 8-36-48L50 325z"/>
+  <path fill="url(#blue)" d="m121 285 56-62 15 56-32 42 4-42-29 25 10-30z"/>
+  <path fill="url(#green)" d="m50 356 53-57-1 28 22-34-2 32 30-29 8 16 32-44 49 41-10-28 77 75v64h-87v-62h-77v62H50z"/>
+  <path fill="#fff" d="m135 350 46-40 50 40z"/>
+  <path fill="url(#green)" d="M169 420v-29a13 13 0 0 1 26 0v29z"/>
+  <path stroke="#143774" stroke-width="3" d="M340 165v255"/>
+  <g font-family="Arial, Helvetica, sans-serif">
+    <text x="377" y="270" fill="#062872" font-size="116" font-weight="700" textLength="815" lengthAdjust="spacingAndGlyphs">KEDARKHAND</text>
+    <text x="382" y="348" fill="#145b25" font-size="61" font-weight="700" textLength="330" lengthAdjust="spacingAndGlyphs">GLOBAL</text>
+    <text x="760" y="348" fill="#cd9a16" font-size="61" font-weight="700" textLength="432" lengthAdjust="spacingAndGlyphs">VENTURES</text>
+    <text x="493" y="412" fill="#113673" font-size="42" textLength="576" lengthAdjust="spacingAndGlyphs">Your Needs, Our Commitment</text>
+  </g>
+  <path stroke="#143774" stroke-width="3" d="M385 400h91m612 0h103"/>
+</svg>

@@ -1,3 +1,10 @@
 node_modules/
 *.tar.gz
 *.tar
+.venv/
+__pycache__/
+*.py[cod]
+db.sqlite3
+db.sqlite3-*
+staticfiles/
+.env
