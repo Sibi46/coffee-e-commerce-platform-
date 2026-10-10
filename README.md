@@ -50,6 +50,20 @@ The earlier Sites URL remains a static review version. Sites' Worker hosting can
 
 ## Production deployment
 
+### Vercel
+
+Import this GitHub repository at https://vercel.com/new using the repository root and the **Django** framework preset. Do not set the Output Directory to `dist` or use the Node `npm run build` command. The committed `vercel.json` and `pyproject.toml` select the Django application and Python build script. Vercel collects static assets automatically.
+
+Before deployment, add a PostgreSQL database (for example through Vercel Marketplace) and supply `DATABASE_URL`. Set `DJANGO_DEBUG=false` and a long random `DJANGO_SECRET_KEY` in Vercel Environment Variables. Vercel deployment hostnames are added automatically; put custom domains in `DJANGO_ALLOWED_HOSTS` and `DJANGO_CSRF_TRUSTED_ORIGINS`.
+
+For category image uploads, configure an S3-compatible bucket with `MEDIA_S3_BUCKET`, `MEDIA_S3_ACCESS_KEY`, `MEDIA_S3_SECRET_KEY`, `MEDIA_S3_ENDPOINT` and `MEDIA_S3_REGION`. Private buckets use signed image URLs. Neither the SQLite database nor local `media/` directory is uploaded to Vercel. Production startup requires persistent database and image storage settings; it fails clearly instead of silently losing accounts or uploads.
+
+The production build applies migrations and seeds the supplied catalog without overwriting edits. Set `INITIAL_ADMIN_USERNAME` and `INITIAL_ADMIN_PASSWORD` privately in Vercel to create your initial Super Admin; these are never included in Git. This command does not reset existing accounts. Remove the initial password variable after the first successful deployment. Local administrator accounts do not automatically transfer to the new database.
+
+For previews, use a separate database and image bucket. Set `VERCEL_RUN_MIGRATIONS=true` only for a preview with its own database; preview builds otherwise do not migrate or seed data. A preview connected to an existing production database can still read/write it at runtime, so use separate credentials.
+
+Official guide: https://vercel.com/docs/frameworks/full-stack/django
+
 Install `requirements-production.txt`. Set variables from `.env.example` in the host dashboard or terminal; `.env` is not automatically loaded. Production requires `DJANGO_DEBUG=false`, a random `DJANGO_SECRET_KEY` and explicit allowed hostnames. Use HTTPS; secure cookies, HTTPS redirects and HSTS are enabled with debug off. Configure the trusted HTTPS reverse proxy correctly; only set `SECURE_PROXY_SSL_HEADER` if the proxy strips client-supplied forwarded headers.
 
 Use PostgreSQL through the documented `DB_*` variables. SQLite is for local development; on a host it requires a persistent `DB_PATH` and one application instance. Back up the database. Never commit credentials or database files.

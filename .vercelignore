@@ -1,0 +1,12 @@
+.git
+.venv
+.openai
+.env
+.env.*
+db.sqlite3
+db.sqlite3-*
+media
+staticfiles
+node_modules
+*.tar.gz
+tmp*
