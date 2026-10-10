@@ -9,11 +9,16 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'development-only-change-before
 if not DEBUG and SECRET_KEY == 'development-only-change-before-deployment':
     raise ImproperlyConfigured('Set DJANGO_SECRET_KEY for production.')
 ALLOWED_HOSTS = [host.strip() for host in os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1,[::1]').split(',') if host.strip()]
+# This project's public alias may be absent from Vercel's generated host variables.
+if 'kedarkhand.vercel.app' not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append('kedarkhand.vercel.app')
 if ON_VERCEL:
     for key in ['VERCEL_URL', 'VERCEL_PROJECT_PRODUCTION_URL', 'VERCEL_BRANCH_URL']:
         if os.environ.get(key):
             ALLOWED_HOSTS.append(os.environ[key])
 CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in os.environ.get('DJANGO_CSRF_TRUSTED_ORIGINS', '').split(',') if origin.strip()]
+if 'https://kedarkhand.vercel.app' not in CSRF_TRUSTED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS.append('https://kedarkhand.vercel.app')
 if ON_VERCEL:
     CSRF_TRUSTED_ORIGINS += ['https://' + host for host in ALLOWED_HOSTS if host not in ['localhost', '127.0.0.1', '[::1]']]
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
