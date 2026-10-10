@@ -3,6 +3,23 @@ from decimal import Decimal
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
+from django.core.exceptions import ValidationError
+from django.core.validators import FileExtensionValidator
+
+def validate_image_size(value):
+    if value.size > 5 * 1024 * 1024:
+        raise ValidationError('Choose an image smaller than 5 MB.')
+
+class Category(models.Model):
+    slug = models.SlugField(unique=True, choices=[('coffee', 'Coffee'), ('tea', 'Tea'), ('edible-oils', 'Edible oils')])
+    name = models.CharField(max_length=100)
+    image = models.ImageField(upload_to='categories/', blank=True,
+        validators=[validate_image_size, FileExtensionValidator(['jpg', 'jpeg', 'png', 'webp'])],
+        help_text='Upload JPG, PNG or WebP, up to 5 MB. Landscape images work best.')
+    class Meta:
+        verbose_name_plural = 'categories'
+    def __str__(self):
+        return self.name
 
 class Product(models.Model):
     slug = models.SlugField(unique=True)

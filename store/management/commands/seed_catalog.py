@@ -1,9 +1,11 @@
 from django.core.management.base import BaseCommand
-from store.models import Product
+from store.models import Product, Category
 
 class Command(BaseCommand):
     help = 'Add the supplied client catalog without inventing prices or overwriting admin changes.'
     def handle(self, *args, **options):
+        for slug, name in [('coffee', 'Coffee'), ('tea', 'Tea'), ('edible-oils', 'Edible oils')]:
+            Category.objects.get_or_create(slug=slug, defaults={'name': name})
         rows = [
             ('instant-coffee','Premium Instant Coffee','coffee','Premium Instant Coffee (In different flavors).','Flavor selection to be confirmed'),
             ('ctc-tea','Strong Premium CTC Tea','tea','Strong Premium CTC Tea.','Pack sizes to be confirmed'),

@@ -13,7 +13,7 @@ from django.http import HttpResponse, JsonResponse
 from django.middleware.csrf import get_token
 from django.utils import timezone
 from django.views.decorators.csrf import ensure_csrf_cookie
-from .models import Product, Variant, SavedSelection, Address, Coupon, Order, OrderItem, Review, NewsletterSubscriber
+from .models import Product, Variant, SavedSelection, Address, Coupon, Order, OrderItem, Review, NewsletterSubscriber, Category
 
 class APIError(Exception):
     def __init__(self, message, status=400):
@@ -25,7 +25,8 @@ def csrf_failure(request, reason=''):
 @ensure_csrf_cookie
 def storefront(request):
     html = (settings.BASE_DIR / 'dist/index.html').read_text(encoding='utf-8')
-    html = html.replace('href="style.css"', 'href="/static/style.css"').replace('src="app.js"', 'src="/static/app.js"')
+    html = html.replace('href="style.css', 'href="/static/style.css').replace('src="app.js', 'src="/static/app.js')
+    html = html.replace('href="design.css', 'href="/static/design.css')
     html = html.replace('src="assets/', 'src="/static/assets/')
     html = html.replace('</body>', '<script src="/static/backend.js"></script></body>')
     return HttpResponse(html)
@@ -143,7 +144,8 @@ def dispatch(request, resource, item, data):
         if request.GET.get('q'):
             from django.db.models import Q
             qs = qs.filter(Q(name__icontains=request.GET['q']) | Q(description__icontains=request.GET['q']))
-        return {'products': [product_json(p) for p in qs]}, 200
+        return {'products': [product_json(p) for p in qs],
+                'categories': [{'slug': c.slug, 'name': c.name, 'image': c.image.url if c.image else None} for c in Category.objects.all()]}, 200
     if resource in ['register', 'login']:
         require_method(request, ['POST'])
         rate_limit(request, resource, 15)

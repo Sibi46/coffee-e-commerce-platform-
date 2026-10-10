@@ -18,6 +18,8 @@ Open http://127.0.0.1:8000. Create your own private administrator account:
 
 Visit http://127.0.0.1:8000/admin/. No default admin password is created.
 
+The footer includes a **Super Admin** button linking to `/super-admin/`. This custom dashboard has its own login, store totals and category image upload cards. Access requires an active Django superuser. Upload a JPG, PNG or WebP image (up to 5 MB) for Coffee, Tea or Edible oils to replace the default collection photographs. Admin accounts configured locally are stored only in the database and are not included in Git. For production, serve `/media/` from persistent file storage or a separate media host; Django's development media route runs only with debug enabled. Back up uploaded images alongside the database.
+
 For a fresh checkout:
 
 ```powershell

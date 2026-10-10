@@ -1,4 +1,13 @@
 import os
+
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.environ.get(
+        "DJANGO_ALLOWED_HOSTS",
+        "localhost,127.0.0.1,kedarkhand.vercel.app"
+    ).split(",")
+    if host.strip()
+]
 from pathlib import Path
 from django.core.exceptions import ImproperlyConfigured
 
@@ -31,6 +40,8 @@ TIME_ZONE = 'Asia/Kolkata'
 USE_I18N = True
 USE_TZ = True
 STATIC_URL = '/static/'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'dist']
 STORAGES = {'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},

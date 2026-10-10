@@ -5,7 +5,7 @@ const elements=new Map(),events={},windowEvents={},storage=new Map();
 function element(id){if(!elements.has(id))elements.set(id,{innerHTML:'',textContent:'',value:'',hidden:true,classList:{add(){},remove(){}},addEventListener(t,f){this[t]=f},focus(){},setAttribute(){}});return elements.get(id)}
 const context={document:{querySelector:element,addEventListener(t,f){events[t]=f}},location:{hash:'',href:''},localStorage:{getItem:k=>storage.get(k),setItem:(k,v)=>storage.set(k,v)},window:{addEventListener:(t,f)=>windowEvents[t]=f,scrollTo(){}},setTimeout:()=>1,clearTimeout(){},console};
 vm.createContext(context);vm.runInContext(readFileSync('dist/app.js','utf8'),context);
-assert(element('#app').innerHTML.includes('Goodness for'));
+assert(element('#app').innerHTML.includes('Everyday rituals.'));
 events.click({target:{closest:s=>s==='[data-add],[data-buy]'?{dataset:{add:'ctc-tea'}}:null}});
 assert.equal(element('#count').textContent,1);assert.equal(JSON.parse(storage.get('kedarmart-cart'))['ctc-tea'],1);
 context.location.hash='#cart';windowEvents.hashchange();assert(element('#app').innerHTML.includes('Strong Premium CTC Tea'));

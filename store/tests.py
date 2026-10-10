@@ -121,3 +121,83 @@ class StoreTests(TestCase):
         self.assertContains(response,'/static/backend.js')
         self.assertContains(response,'/static/style.css')
         self.assertIn('csrftoken',response.cookies)
+        self.assertContains(response, 'href="/super-admin/">Super Admin')
+    def test_custom_superadmin_access_and_login(self):
+        self.assertRedirects(self.client.get('/super-admin/'), '/super-admin/login/')
+        self.client.force_login(self.user)
+        self.assertRedirects(self.client.get('/super-admin/'), '/super-admin/login/')
+        self.client.logout()
+        self.user.is_superuser = True
+        self.user.is_staff = True
+        self.user.save()
+        response = self.client.post('/super-admin/login/', {'username': self.user.username, 'password': 'Str0ng-test-pass!'})
+        self.assertRedirects(response, '/super-admin/')
+        self.assertContains(self.client.get('/super-admin/'), 'Super Admin dashboard')
+        self.assertEqual(self.client.get('/super-admin/logout/').status_code, 405)
+        self.assertRedirects(self.client.post('/super-admin/logout/'), '/super-admin/login/')
+    def test_custom_superadmin_rejects_invalid_image(self):
+        from .models import Category
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        Category.objects.create(slug='coffee', name='Coffee')
+        self.user.is_superuser = True
+        self.user.save()
+        self.client.force_login(self.user)
+        response = self.client.post('/super-admin/', {'category': 'coffee', 'image': SimpleUploadedFile('fake.jpg', b'bad', content_type='image/jpeg')})
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(Category.objects.get().image)
+    def test_admin_category_upload_and_catalog_image(self):
+        import tempfile
+        from io import BytesIO
+        from PIL import Image
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from .models import Category
+        buffer = BytesIO()
+        Image.new('RGB', (80, 60), 'green').save(buffer, format='PNG')
+        from django.conf import settings
+        with tempfile.TemporaryDirectory(dir=settings.BASE_DIR) as directory, self.settings(MEDIA_ROOT=directory):
+            self.user.is_staff = True
+            self.user.is_superuser = True
+            self.user.save()
+            self.client.force_login(self.user)
+            response = self.client.post('/admin/store/category/add/', {
+                'name': 'Coffee', 'slug': 'coffee',
+                'image': SimpleUploadedFile('coffee.png', buffer.getvalue(), content_type='image/png'), '_save': 'Save'})
+            self.assertEqual(response.status_code, 302)
+            category = Category.objects.get(slug='coffee')
+            self.assertTrue(category.image.storage.exists(category.image.name))
+            data = self.client.get('/api/products/').json()['categories']
+            self.assertEqual(data[0]['image'], category.image.url)
+            self.assertTrue(category.image.url.startswith('/media/categories/'))
+            self.client.logout()
+            self.assertEqual(self.client.get('/admin/store/category/').status_code, 302)
+    def test_admin_rejects_non_image_upload(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        from .models import Category
+        self.user.is_staff = True
+        self.user.is_superuser = True
+        self.user.save()
+        self.client.force_login(self.user)
+        response = self.client.post('/admin/store/category/add/', {
+            'name': 'Coffee', 'slug': 'coffee',
+            'image': SimpleUploadedFile('fake.jpg', b'not an image', content_type='image/jpeg'), '_save': 'Save'})
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(Category.objects.exists())
+    def test_storefront_asset_markup_and_resources(self):
+        from html.parser import HTMLParser
+        class Assets(HTMLParser):
+            urls = []
+            def handle_starttag(self, tag, attrs):
+                attrs = dict(attrs)
+                if tag == 'link' and attrs.get('rel') == 'stylesheet':
+                    self.urls.append(attrs['href'])
+                if tag == 'script':
+                    self.urls.append(attrs['src'])
+        parser = Assets()
+        parser.feed(self.client.get('/').content.decode())
+        self.assertEqual(len(parser.urls), 4)
+        for url in parser.urls:
+            self.assertTrue(url.startswith('/static/'), url)
+            self.assertNotIn('<', url)
+            self.assertNotIn('>', url)
+        self.assertTrue(any(url.startswith('/static/style.css?') for url in parser.urls))
+        self.assertTrue(any(url.startswith('/static/app.js?') for url in parser.urls))

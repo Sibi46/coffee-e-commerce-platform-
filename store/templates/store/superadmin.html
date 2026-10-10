@@ -1,0 +1,12 @@
+{% load static %}
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Super Admin | Kedarmart</title>
+<link rel="stylesheet" href="{% static 'superadmin.css' %}"></head>
+<body><header><a href="/"><img src="{% static 'assets/logo.jpeg' %}" alt="Kedarkhand Global Ventures"></a><a class="back" href="/">View storefront ↗</a></header>
+<main>{% if login_page %}<section class="login"><span class="eyebrow">KEDARMART MANAGEMENT</span><h1>Super Admin</h1><p>Sign in to manage your store and collection images.</p>
+{% if error %}<div class="message error" role="alert">{{ error }}</div>{% endif %}
+<form method="post">{% csrf_token %}<label for="username">Username / mobile number</label><input id="username" name="username" autocomplete="username" required maxlength="150"><label for="password">Password</label><input id="password" name="password" type="password" autocomplete="current-password" required maxlength="128"><button type="submit">Sign in</button></form></section>
+{% else %}<div class="heading"><div><span class="eyebrow">KEDARMART MANAGEMENT</span><h1>Super Admin dashboard</h1><p>Your store, thoughtfully managed.</p></div><form method="post" action="{% url 'superadmin-logout' %}">{% csrf_token %}<button class="secondary">Sign out</button></form></div>
+{% for message in messages %}<div class="message" role="status">{{ message }}</div>{% endfor %}
+<div class="stats"><div><strong>{{ product_count }}</strong><span>Products</span></div><div><strong>{{ order_count }}</strong><span>Orders & enquiries</span></div><div><strong>{{ subscriber_count }}</strong><span>Newsletter subscribers</span></div></div>
+<section><h2>Category images</h2><p>Update the photographs shown in your homepage categories and collections. Choose a landscape JPG, PNG or WebP image up to 5 MB.</p><div class="categories">{% for entry in categories %}<article><div class="preview">{% if entry.category.image %}<img src="{{ entry.category.image.url }}" alt="{{ entry.category.name }}">{% else %}<span>{{ entry.category.name }}<small>Default collection photograph</small></span>{% endif %}</div><div class="card-body"><h3>{{ entry.category.name }}</h3><form method="post" enctype="multipart/form-data">{% csrf_token %}<input type="hidden" name="category" value="{{ entry.category.slug }}">{{ entry.form.as_p }}<button>Save image</button></form></div></article>{% endfor %}</div></section>{% endif %}</main></body></html>
